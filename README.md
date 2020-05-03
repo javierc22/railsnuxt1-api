@@ -189,7 +189,7 @@ rails g controller Api::V1::User::Blogs index show create update destroy
 
 Para las pruebas. Fijarse de tener los **headers** con un token válido
 
-<img src="./readme_img/img08.png" height="200">
+<img src="./readme_img/img08.png" height="100">
 
 Crear Blog
 
