@@ -157,7 +157,7 @@ end
  => {"id"=>1, "first_name"=>nil, "last_name"=>nil, "created_at"=>"2020-05-03T19:42:49.351Z", "updated_at"=>"2020-05-03T20:13:46.569Z", "email"=>"user01@email.com", "auth_token"=>"166637f5-32bd-4dc4-948b-1c7c52f8a105", :auth_jwt=>"eyJhbGciOiJIUzI1NiJ9.eyJhdXRoX3Rva2VuIjoiMTY2NjM3ZjUtMzJiZC00ZGM0LTk0OGItMWM3YzUyZjhhMTA1IiwiZXhwIjoxNTg5ODMzMDM5fQ.6NKn4ujSWmS-x_6K7wZWG_qQ8i4Qwnf7H0gHhaUhyMI"} 
 ~~~
 
-# Realizando pruebas con Postman
+## Realizando pruebas con Postman
 
 Haciendo Login y obteniendo Token
 
@@ -170,3 +170,37 @@ Mostrando Usuario según el Token
 <img src="./readme_img/img05.png" height="450">
 
 <img src="./readme_img/img06.png" height="450">
+
+Cerrar sesión
+
+<img src="./readme_img/img07.png" height="450">
+
+## Crear Blog
+
+Crear modelo
+~~~bash
+rails g model blog title body:text user:references
+~~~
+
+Crear controladores
+~~~console
+rails g controller Api::V1::User::Blogs index show create update destroy
+~~~
+
+Para las pruebas. Fijarse de tener los **headers** con un token válido
+
+<img src="./readme_img/img08.png" height="200">
+
+Crear Blog
+
+<img src="./readme_img/img09.png" height="450">
+
+Obtener Blog
+
+<img src="./readme_img/img10.png" height="450">
+
+Actualizar
+<img src="./readme_img/img11.png" height="450">
+
+Eliminar
+<img src="./readme_img/img12.png" height="450">
