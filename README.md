@@ -200,7 +200,9 @@ Obtener Blog
 <img src="./readme_img/img10.png" height="450">
 
 Actualizar
+
 <img src="./readme_img/img11.png" height="450">
 
 Eliminar
+
 <img src="./readme_img/img12.png" height="450">
