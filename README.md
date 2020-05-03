@@ -83,4 +83,90 @@ end
 ~~~
 
 Realizando prueba y obteniendo respuesta para error **401**
-<img src="./readme_img/img02.png" height="400">
+<img src="./readme_img/img02.png" height="450">
+
+## Generar Token
+
+Hasta el commit `7fa884b` podemos generar un Token con el método `jwt`
+~~~console
+2.6.5 :001 > User.new
+ => #<User id: nil, first_name: nil, last_name: nil, created_at: nil, updated_at: nil, email: "">
+
+2.6.5 :002 > User.create(email:'user01@email.com', password:'hola123')
+   (0.2ms)  BEGIN
+  User Exists? (0.5ms)  SELECT 1 AS one FROM "users" WHERE "users"."email" = $1 LIMIT $2  [["email", "user01@email.com"], ["LIMIT", 1]]
+  User Create (0.4ms)  INSERT INTO "users" ("created_at", "updated_at", "email", "encrypted_password") VALUES ($1, $2, $3, $4) RETURNING "id"  [["created_at", "2020-05-03 19:42:49.351774"], ["updated_at", "2020-05-03 19:42:49.351774"], ["email", "user01@email.com"], ["encrypted_password", "$2a$11$rCxdAj2lzAvn9Z9miQ.MK.YRpDHZIV0mupQIhyR33YQfVBVleCjnq"]]
+   (1.9ms)  COMMIT
+ => #<User id: 1, first_name: nil, last_name: nil, created_at: "2020-05-03 19:42:49", updated_at: "2020-05-03 19:42:49", email: "user01@email.com"> 
+
+2.6.5 :004 > User.first.jwt
+  User Load (1.0ms)  SELECT "users".* FROM "users" ORDER BY "users"."id" ASC LIMIT $1  [["LIMIT", 1]]
+ => "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwiZXhwIjoxNTg4NjIxNDE3fQ.BQqMvmui-wUCyccaJnL1tw-N1JaJfuZRQrc2zcG1mXY" 
+~~~
+
+### Generando UUID para usarlo con JWT
+
+~~~ruby
+class User < ApplicationRecord
+  # Include default devise modules. Others available are:
+  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable
+
+  before_create :generate_auth_token
+
+  # Genera un UUID
+  def generate_auth_token
+    self.auth_token = SecureRandom.uuid
+  end
+
+  def jwt(exp = 15.days.from_now)
+    JWT.encode({ auth_token: self.auth_token, exp: exp.to_i }, Rails.application.credentials.secret_key_base, "HS256")
+  end
+
+  def as_json_with_jwt
+    json = self.as_json
+    json[:auth_jwt] = self.jwt
+    json
+  end
+end
+~~~
+
+~~~console
+2.6.5 :001 > user = User.first
+  User Load (0.4ms)  SELECT "users".* FROM "users" ORDER BY "users"."id" ASC LIMIT $1  [["LIMIT", 1]]
+ => #<User id: 1, first_name: nil, last_name: nil, created_at: "2020-05-03 19:42:49", updated_at: "2020-05-03 19:42:49", email: "user01@email.com", auth_token: nil> 
+
+2.6.5 :002 > user.generate_auth_token
+ => "166637f5-32bd-4dc4-948b-1c7c52f8a105" 
+
+2.6.5 :003 > user.save
+   (0.2ms)  BEGIN
+  User Update (0.4ms)  UPDATE "users" SET "updated_at" = $1, "auth_token" = $2 WHERE "users"."id" = $3  [["updated_at", "2020-05-03 20:13:46.569756"], ["auth_token", "166637f5-32bd-4dc4-948b-1c7c52f8a105"], ["id", 1]]
+   (1.7ms)  COMMIT
+ => true 
+
+2.6.5 :004 > user.jwt
+ => "eyJhbGciOiJIUzI1NiJ9.eyJhdXRoX3Rva2VuIjoiMTY2NjM3ZjUtMzJiZC00ZGM0LTk0OGItMWM3YzUyZjhhMTA1IiwiZXhwIjoxNTg5ODMyODM1fQ.brTmdaPuwe_9RJwZlhoh6eD0EsKMN-rVPbGiJi9bVls" 
+
+2.6.5 :005 > u = User.find_by_auth_token('166637f5-32bd-4dc4-948b-1c7c52f8a105')
+  User Load (0.3ms)  SELECT "users".* FROM "users" WHERE "users"."auth_token" = $1 LIMIT $2  [["auth_token", "166637f5-32bd-4dc4-948b-1c7c52f8a105"], ["LIMIT", 1]]
+ => #<User id: 1, first_name: nil, last_name: nil, created_at: "2020-05-03 19:42:49", updated_at: "2020-05-03 20:13:46", email: "user01@email.com", auth_token: "166637f5-32bd-4dc4-948b-1c7c52f8a105"> 
+
+2.6.5 :006 > u.as_json_with_jwt
+ => {"id"=>1, "first_name"=>nil, "last_name"=>nil, "created_at"=>"2020-05-03T19:42:49.351Z", "updated_at"=>"2020-05-03T20:13:46.569Z", "email"=>"user01@email.com", "auth_token"=>"166637f5-32bd-4dc4-948b-1c7c52f8a105", :auth_jwt=>"eyJhbGciOiJIUzI1NiJ9.eyJhdXRoX3Rva2VuIjoiMTY2NjM3ZjUtMzJiZC00ZGM0LTk0OGItMWM3YzUyZjhhMTA1IiwiZXhwIjoxNTg5ODMzMDM5fQ.6NKn4ujSWmS-x_6K7wZWG_qQ8i4Qwnf7H0gHhaUhyMI"} 
+~~~
+
+# Realizando pruebas con Postman
+
+Haciendo Login y obteniendo Token
+
+<img src="./readme_img/img03.png" height="450">
+
+<img src="./readme_img/img04.png" height="450">
+
+Mostrando Usuario según el Token
+
+<img src="./readme_img/img05.png" height="450">
+
+<img src="./readme_img/img06.png" height="450">
