@@ -37,4 +37,14 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
+
+  def jwt(exp = 1.days.from_now)
+    JWT.encode({ id: self.id, exp: exp.to_i }, Rails.application.credentials.secret_key_base, "HS256")
+  end
+
+  def as_json_with_jwt
+    json = self.as_json
+    json[:auth_jwt] = self.jwt
+    json
+  end
 end
