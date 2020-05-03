@@ -14,5 +14,6 @@ class Api::V1::User::SessionsController < Api::V1::User::AppController
   end
 
   def me
+    render json: { success: true, user: current_user.as_profile_json }
   end
 end

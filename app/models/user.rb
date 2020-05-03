@@ -51,8 +51,19 @@ class User < ApplicationRecord
   end
 
   def as_json_with_jwt
-    json = self.as_json
+    json = {}
+    json[:email] = self.email
+    json[:first_name] = self.first_name
+    json[:last_name] = self.last_name
     json[:auth_jwt] = self.jwt
+    json
+  end
+
+  def as_profile_json
+    json = {}
+    json[:email] = self.email
+    json[:first_name] = self.first_name
+    json[:last_name] = self.last_name
     json
   end
 end
